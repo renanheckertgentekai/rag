@@ -1,43 +1,40 @@
 import sys
 from vector_store import get_vector_store
-from agent import agent, MyDeps
-from query_agent import query_agent
+from agents.agent import agent
+from agents.query_agent import query_agent
 
 def main():
     if len(sys.argv) < 2:
         print("Usage: python script.py '<your query>'")
         sys.exit(1)
+    original_query = sys.argv[1]
 
-    query = sys.argv[1]
+    print(f'Query to answer: {original_query}\n')
 
     document = "minikube.pdf"
-
+    max_chunks = 2
+    total_queries = 4
     vector_store = get_vector_store(document)
 
-    deps = MyDeps(
-        vector_db=vector_store,
-        max_chunks=3
-    )
-
     # Regenerate queries
-    queries = query_agent.run_sync(query, deps=4)
+    queries = query_agent.run_sync(original_query, deps=total_queries)
 
-    print(f'USER INPUT {query}')
-    print(f'Query generated')
+    # Get chunks from new queries
+    chunks_list: list[str] = [] 
     for query in queries.data:
-        print(query)
+        seacrh_data = vector_store.similarity_search_with_score(query, max_chunks)
+        print(f"Seacrching for query: '{query}'")
+        for document, score in seacrh_data:
+            if document.id:
+                chunks_list.append(document.id)
+            print(f'Chunk ID: {document.id}; Score: {score}')
     
-    for i, query in enumerate(queries.data):
-        print(10 * '=' + 'START')
-        result = agent.run_sync(f'Original query: {query}', deps=deps)
-        if i == 0:
-            print(f'Original Query: {query}')
-        else:
-            print(f'Generated Query {i}: {query}')
-        print('------ > Result')
-        print(result.data)
-        print(10 * '=')
-        print('\n')
+    all_chunks = set(chunks_list)
+
+    # Final seacrh
+    result = agent.run_sync(f'Original query: {original_query}', deps=all_chunks)
+    print('\nFinal Answer:')
+    print(result.data)
 
 if __name__ == "__main__":
     main()

@@ -7,7 +7,9 @@ query_agent = Agent(
     system_prompt="""
 You will receive a query to be embedded and used for similarity search. 
 Currently, we are experiencing many problems with the poor quality of the retrieved chunks, 
-so we need you to generate additional queries based on the one you receive.
+so we need you to generate additional queries based on the one you receive. Its important
+that the queries you will generates have a similar context of the original one, avoiding
+subjects out of contexts.
 
 Use the `max_queries` to get the size of the queries list you should create.
 
