@@ -1,0 +1,5 @@
+faiss-cpu>=1.10.0
+langchain-community>=0.3.19
+langchain-openai>=0.3.8
+pydantic-ai>=0.0.39
+pypdf>=5.3.1
